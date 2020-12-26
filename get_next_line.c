@@ -6,7 +6,7 @@
 /*   By: yusaito <yusaito@student.42tokyo.j>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/11/21 13:31:15 by yusaito           #+#    #+#             */
-/*   Updated: 2020/12/27 01:24:19 by yusaito          ###   ########.fr       */
+/*   Updated: 2020/12/27 01:38:51 by yusaito          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,29 +32,29 @@ static char	*get_indent_next(char *buf, int *flag)
 
 static int	read_one_line(int fd, char **line, char **rest)
 {
-	char	*buf[BUFFER_SIZE + 1];
+	char	*buf;
 	char	*tmp;
 	int		rc;
 	int		flag;
 
-	if ((buf[fd] = malloc(BUFFER_SIZE + 1)) == NULL)
+	if ((buf = malloc(BUFFER_SIZE + 1)) == NULL)
 		return (-1);
-	while ((rc = read(fd, buf[fd], BUFFER_SIZE)) != 0)
+	while ((rc = read(fd, buf, BUFFER_SIZE)) != 0)
 	{
-		buf[fd][rc] = '\0';
+		buf[rc] = '\0';
 		tmp = *line;
-		*line = ft_strjoin(tmp, buf[fd]);
+		*line = ft_strjoin(tmp, buf);
 		free(tmp);
 		if (*line == NULL)
 		{
-			free(buf[fd]);
+			free(buf);
 			return (-1);
 		}
-		*rest = get_indent_next(buf[fd], &flag);
+		*rest = get_indent_next(buf, &flag);
 		if (flag == 1)
 			return (1);
 	}
-	free(buf[fd]);
+	free(buf);
 	return (0);
 }
 
