@@ -6,7 +6,7 @@
 /*   By: yusaito <yusaito@student.42tokyo.j>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/12/02 10:54:33 by yusaito           #+#    #+#             */
-/*   Updated: 2020/12/20 22:49:04 by yusaito          ###   ########.fr       */
+/*   Updated: 2021/01/03 16:27:24 by yusaito          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,10 @@ int		get_next_line(int fd, char **line);
 /*
 ** get_next_line_utils.c
 */
-size_t	ft_strlen(char const *str);
-char	*ft_gnl_memchr(char **str, char c, int *flag);
+int		ft_strlen(char const *str);
+int		find_indent(char *str);
 void	*ft_memcpy(void *buf, const void *buf2, size_t n);
-char	*ft_strjoin(char const *s1, char const *s2);
-char	*ft_strdup(char **rest, int *flag);
+char	*ft_strjoin(const char *s1, char const *s2, int n);
+char	*ft_strndup(char *str, int size);
 
 #endif

@@ -6,80 +6,71 @@
 /*   By: yusaito <yusaito@student.42tokyo.j>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/11/21 13:31:15 by yusaito           #+#    #+#             */
-/*   Updated: 2020/12/27 01:38:51 by yusaito          ###   ########.fr       */
+/*   Updated: 2021/01/03 16:26:18 by yusaito          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static char	*get_indent_next(char *buf, int *flag)
+static int	read_one_line(char **line, char *buf, char **rest)
 {
-	int	i;
-
-	i = 0;
-	*flag = 0;
-	while (buf[i])
-	{
-		if (buf[i] == '\n')
-		{
-			*flag = 1;
-			return (buf + i + 1);
-		}
-		i++;
-	}
-	return (NULL);
-}
-
-static int	read_one_line(int fd, char **line, char **rest)
-{
-	char	*buf;
-	char	*tmp;
-	int		rc;
+	int		n;
 	int		flag;
+	char	*tmp;
 
-	if ((buf = malloc(BUFFER_SIZE + 1)) == NULL)
-		return (-1);
-	while ((rc = read(fd, buf, BUFFER_SIZE)) != 0)
+	flag = 1;
+	if ((n = find_indent(buf)) == -1)
 	{
-		buf[rc] = '\0';
-		tmp = *line;
-		*line = ft_strjoin(tmp, buf);
-		free(tmp);
-		if (*line == NULL)
-		{
-			free(buf);
-			return (-1);
-		}
-		*rest = get_indent_next(buf, &flag);
-		if (flag == 1)
-			return (1);
+		flag = 0;
+		n = ft_strlen(buf);
 	}
-	free(buf);
-	return (0);
+	if ((tmp = ft_strjoin(*line, buf, n)) == NULL)
+		return (-1);
+	free(*line);
+	*line = tmp;
+	tmp = NULL;
+	if (flag == 1)
+		if ((tmp = ft_strndup(buf + n + 1, -1)) == NULL)
+			return (-1);
+	free(*rest);
+	*rest = tmp;
+	return (flag);
 }
 
-int		get_next_line(int fd, char **line)
+static void	all_free(char **line, char **rest, char **buf, int ret)
 {
-	int			flag;
-	int			read_res;
+	free(*buf);
+	if (ret == -1)
+	{
+		free(*line);
+		free(*rest);
+	}
+}
+
+int			get_next_line(int fd, char **line)
+{
+	int			ret;
+	int			rc;
+	char		*buf;
 	static char	*rest;
 
-	flag = 0;
 	if (line == NULL || fd < 0 || BUFFER_SIZE <= 0)
-		return (-1);
-	if (rest != NULL)
-	{
-		if ((*line = ft_strdup(&rest, &flag)) == NULL)
-			return (-1);
-	}
+		ret = -1;
+	ret = 0;
+	if ((*line = malloc(1)) == NULL)
+		ret = -1;
 	else
-	{
-		if ((*line = malloc(1)) == NULL)
-			return (-1);
 		**line = '\0';
+	if (rest)
+		if ((ret = read_one_line(line, rest, &rest)) == 1)
+			return (1);
+	if ((buf = malloc(BUFFER_SIZE + 1)) == NULL)
+		ret = -1;
+	while (ret == 0 && ((rc = read(fd, buf, BUFFER_SIZE)) > 0))
+	{
+		buf[rc] = '\0';
+		ret = read_one_line(line, buf, &rest);
 	}
-	if (flag == 1)
-		return (1);
-	read_res = read_one_line(fd, line, &rest);
-	return (read_res);
+	all_free(line, &rest, &buf, ret);
+	return (ret);
 }
