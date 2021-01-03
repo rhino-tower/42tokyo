@@ -6,7 +6,7 @@
 /*   By: yusaito <yusaito@student.42tokyo.j>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/11/21 13:31:15 by yusaito           #+#    #+#             */
-/*   Updated: 2021/01/03 16:26:18 by yusaito          ###   ########.fr       */
+/*   Updated: 2021/01/03 19:28:33 by yusaito          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@ static int	read_one_line(char **line, char *buf, char **rest)
 	char	*tmp;
 
 	flag = 1;
+	if (buf == NULL)
+		return (-1);
 	if ((n = find_indent(buf)) == -1)
 	{
 		flag = 0;
@@ -52,7 +54,7 @@ int			get_next_line(int fd, char **line)
 	int			ret;
 	int			rc;
 	char		*buf;
-	static char	*rest;
+	static char	*rest[fd_max];
 
 	if (line == NULL || fd < 0 || BUFFER_SIZE <= 0)
 		ret = -1;
@@ -61,16 +63,16 @@ int			get_next_line(int fd, char **line)
 		ret = -1;
 	else
 		**line = '\0';
-	if (rest)
-		if ((ret = read_one_line(line, rest, &rest)) == 1)
+	if (rest[fd])
+		if ((ret = read_one_line(line, rest[fd], &(rest[fd]))) == 1)
 			return (1);
 	if ((buf = malloc(BUFFER_SIZE + 1)) == NULL)
 		ret = -1;
 	while (ret == 0 && ((rc = read(fd, buf, BUFFER_SIZE)) > 0))
 	{
 		buf[rc] = '\0';
-		ret = read_one_line(line, buf, &rest);
+		ret = read_one_line(line, buf, &(rest[fd]));
 	}
-	all_free(line, &rest, &buf, ret);
+	all_free(line, &(rest[fd]), &buf, ret);
 	return (ret);
 }
