@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yusaito <yusaito@student.42tokyo.j>        +#+  +:+       +#+        */
+/*   By: yuki <yuki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/12/02 10:54:33 by yusaito           #+#    #+#             */
-/*   Updated: 2021/01/03 16:27:24 by yusaito          ###   ########.fr       */
+/*   Updated: 2021/01/05 21:15:48 by yuki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
 
+# define MAX_FD 256
 # include <stdlib.h>
 # include <fcntl.h>
 # include <unistd.h>

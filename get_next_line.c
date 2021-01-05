@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yusaito <yusaito@student.42tokyo.j>        +#+  +:+       +#+        */
+/*   By: yuki <yuki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/11/21 13:31:15 by yusaito           #+#    #+#             */
-/*   Updated: 2021/01/03 19:28:33 by yusaito          ###   ########.fr       */
+/*   Updated: 2021/01/05 21:37:53 by yuki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,16 +49,30 @@ static void	all_free(char **line, char **rest, char **buf, int ret)
 	}
 }
 
+static int	error_check(char **line, char **rest, int fd)
+{
+	if (line == NULL || BUFFER_SIZE <= 0)
+	{
+		free(*rest);
+		return (1);
+	}
+	else if (fd < 0)
+	{
+		return (1);
+	}
+	return (0);
+}
+
 int			get_next_line(int fd, char **line)
 {
 	int			ret;
 	int			rc;
 	char		*buf;
-	static char	*rest[fd_max];
+	static char	*rest[MAX_FD];
 
-	if (line == NULL || fd < 0 || BUFFER_SIZE <= 0)
-		ret = -1;
 	ret = 0;
+	if (error_check(line, rest, fd))
+		return (-1);
 	if ((*line = malloc(1)) == NULL)
 		ret = -1;
 	else
