@@ -69,7 +69,7 @@ int			print_int(long num)
 	return (print_len);
 }
 
-int			calc_mod(unsigned int num, t_format f)
+static int		calc_mod(unsigned int num, t_format f)
 {
 	if (f.type == 'x')
 		return (num % 16 >= 10 ? (num % 16 - 10) + 'a' : num % 16 + '0');
