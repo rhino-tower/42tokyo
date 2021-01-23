@@ -6,7 +6,7 @@
 /*   By: yusaito <yusaito@student.42tokyo.j>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/12 21:36:12 by yusaito           #+#    #+#             */
-/*   Updated: 2021/01/15 22:15:41 by yusaito          ###   ########.fr       */
+/*   Updated: 2021/01/24 00:56:26 by yusaito          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ void	init_format_val(t_format *f)
 	f->f_zero = -1;
 	f->width = -1;
 	f->precision = -1;
-	f->conversions = -1;
+	f->type = -1;
 }
 
 int		flag_check(const char **format, t_format *f)
@@ -31,19 +31,11 @@ int		flag_check(const char **format, t_format *f)
 			f->f_zero = 1;
 		(*format)++;
 	}
-	if (f->f_minus == 1 && f->f_zero == 1)
-	{
-		f->f_zero = 0;
-		return (ERROR);
-	}
 	return (OK);
 }
 
 int		width_check(const char **format, t_format *f, va_list *ap)
 {
-	int	width;
-
-	width = 0;
 	if (**format == '*')
 	{
 		f->width = (int)va_arg(*ap, int);
@@ -51,23 +43,29 @@ int		width_check(const char **format, t_format *f, va_list *ap)
 	}
 	else if ('0' <= **format && **format <= '9')
 	{
+		f->width = 0;
 		while (('0' <= **format && **format <= '9') && **format)
 		{
-			width = width * 10 + **format - '0';
+			f->width = f->width * 10 + **format - '0';
 			(*format)++;
 		}
-		f->width = width;
 	}
-	if (ft_strnchr(".cspdiuxX%", **format) == -1)
+	if (ft_strnchr(".cspdiuxX%", **format) == -1 || f->width >= INT_MAX - 1 \
+		|| f->width <= INT_MIN + 1)
 		return (ERROR);
+	if (f->width < 0)
+	{
+		f->width *= -1;
+		f->f_minus = 1;
+	}
 	return (OK);
 }
 
 int		precision_check(const char **format, t_format *f, va_list *ap)
 {
-	int precision;
-
-	precision = 0;
+	if (f->type == 'c' && ft_strnchr("*0123456789", **format) >= 0)
+		return (ERROR);
+	f->precision = 0;
 	if (**format == '*')
 	{
 		f->precision = (int)va_arg(*ap, int);
@@ -75,23 +73,22 @@ int		precision_check(const char **format, t_format *f, va_list *ap)
 	}
 	else if ('0' <= **format && **format <= '9')
 	{
-		while (('0' <= **format && **format <= '0') && **format)
+		while (('0' <= **format && **format <= '9') && **format)
 		{
-			precision = precision * 10 + **format - '0';
+			f->precision = f->precision * 10 + **format - '0';
 			(*format)++;
 		}
-		f->precision = precision;
 	}
 	if (ft_strnchr("cspdiuxX%", **format) == -1)
 		return (ERROR);
 	return (OK);
 }
 
-int		conversion_check(const char **format, t_format *f)
+int		type_check(const char **format, t_format *f)
 {
 	if (ft_strnchr("cspdiuxX%", **format) == -1)
 		return (ERROR);
-	f->conversions = **format;
+	f->type = **format;
 	(*format)++;
 	return (OK);
 }

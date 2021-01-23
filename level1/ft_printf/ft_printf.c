@@ -6,13 +6,13 @@
 /*   By: yusaito <yusaito@student.42tokyo.j>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/01/10 14:42:03 by yusaito           #+#    #+#             */
-/*   Updated: 2021/01/15 22:18:50 by yusaito          ###   ########.fr       */
+/*   Updated: 2021/01/23 23:59:51 by yusaito          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int		print_str(const char **s)
+static int	print_normal(const char **s)
 {
 	int i;
 
@@ -24,61 +24,59 @@ int		print_str(const char **s)
 	return (i);
 }
 
-int		print_arg(t_format f, va_list ap)
+int			print_arg(t_format f, va_list ap)
 {
-	char	*str;
+	char *str;
 
-	if (f.conversions == 's')
-		str = (char *)va_arg(ap, char*);
-	if (ft_strlen(str) >= f.width)
+	if (f.type == 's')
 	{
-		return (ft_putstr(str));
+		if ((str = (char*)va_arg(ap, char*)) == NULL)
+			return (print_s("(null)", f));
+		return (print_s(str, f));
 	}
-	else
-	{
-		if (f.f_minus == 1)
-		{
-			if (f.f_zero == 1)
-				ft_putnchar('0', f.width - ft_strlen(str));
-			else
-				ft_putnchar(' ', f.width - ft_strlen(str));
-			ft_putstr(str);
-		}
-		else
-		{
-			ft_putstr(str);
-			if (f.f_zero == 1)
-				ft_putnchar('0', f.width - ft_strlen(str));
-			else
-				ft_putnchar(' ', f.width - ft_strlen(str));
-		}
-	}
-	return (f.width);
+	if (f.type == 'c')
+		return (print_c((char)va_arg(ap, int), f));
+	else if (f.type == 'd' || f.type == 'i')
+		return (print_d((int)va_arg(ap, int), f));
+	else if (f.type == 'u' || f.type == 'x' || f.type == 'X')
+		return (print_u_x((unsigned int)va_arg(ap, unsigned int), f));
+	else if (f.type == 'p')
+		return (print_pointer((uintptr_t)va_arg(ap, uintptr_t), f));
+	else if (f.type == '%')
+		return (print_c('%', f));
+	return (0);
 }
 
-int		format_check(const char **format, va_list *ap)
+int			format_check(const char **format, va_list *ap, \
+			int *output_val)
 {
 	t_format f;
 
 	(*format)++;
 	init_format_val(&f);
-	if (flag_check(format, &f) == ERROR)
-		return (ERROR);
-	if (width_check(format, &f, ap) == ERROR)
-		return (ERROR);
+	flag_check(format, &f);
+	if (**format == ' ')
+	{
+		(*output_val) += write(1, " ", 1);
+		while (**format == ' ')
+			(*format)++;
+	}
+	if (ft_strnchr("0123456789*", **format) != -1)
+		if (width_check(format, &f, ap) == ERROR)
+			return (ERROR);
 	if (**format == '.')
 	{
 		(*format)++;
 		if (precision_check(format, &f, ap) == ERROR)
 			return (ERROR);
 	}
-	if (conversion_check(format, &f) == ERROR)
+	if (type_check(format, &f) == ERROR)
 		return (ERROR);
-	print_arg(f, *ap);
-	return (0);
+	(*output_val) += print_arg(f, *ap);
+	return (OK);
 }
 
-int		ft_printf(const char *format, ...)
+int			ft_printf(const char *format, ...)
 {
 	va_list	ap;
 	int		output_val;
@@ -90,9 +88,12 @@ int		ft_printf(const char *format, ...)
 	while (*format)
 	{
 		if (*format == '%')
-			format_check(&format, &ap);
-		else
-			output_val += print_str(&format);
+		{
+			if (format_check(&format, &ap, &output_val) == ERROR)
+				return (ERROR);
+			continue;
+		}
+		output_val += print_normal(&format);
 	}
 	va_end(ap);
 	return (output_val);

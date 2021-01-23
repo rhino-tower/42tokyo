@@ -1,6 +1,10 @@
 SRCS = ft_printf.c \
-	   utils.c \
-	   format_checker.c
+	   printf_utils.c \
+	   print_num_utils.c \
+	   format_checker.c \
+	   print_c_s.c \
+	   print_num.c \
+	   print_pointer.c
 OBJS = $(SRCS:.c=.o)
 HEADER = libft.h
 NAME = libftprintf.a
